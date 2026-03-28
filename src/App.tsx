@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactMap, {
   FullscreenControl,
   GeolocateControl,
@@ -6,6 +6,8 @@ import ReactMap, {
   NavigationControl,
   ScaleControl,
   Source,
+  type MapGeoJSONFeature,
+  type MapLayerMouseEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -26,7 +28,19 @@ export function App() {
     general: null,
     local: null,
   });
-  // const [error, setError] = useState<string | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<{ feature: MapGeoJSONFeature; x: number; y: number } | undefined>(
+    undefined,
+  );
+
+  const onHover = useCallback((event: MapLayerMouseEvent) => {
+    const {
+      features,
+      point: { x, y },
+    } = event;
+    const hoveredFeature = features && features[0];
+
+    setHoverInfo(hoveredFeature && { feature: hoveredFeature, x, y });
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,7 +66,6 @@ export function App() {
         }
       } catch {
         if (isMounted) {
-          // setError("データを読み込めませんでした");
           console.error("道路データの取得に失敗しました");
         }
       }
@@ -67,7 +80,6 @@ export function App() {
 
   return (
     <div id="app">
-      {/* {error && <p>{error}</p>} */}
       <ReactMap
         initialViewState={{
           longitude: 139,
@@ -75,27 +87,50 @@ export function App() {
           zoom: 8,
         }}
         mapStyle="https://tris5572.github.io/map-style/dark/style.json"
+        interactiveLayerIds={["local", "general", "highway"]}
+        onMouseMove={onHover}
       >
         {roadData.local && (
           <Source id="local" type="geojson" data={roadData.local as any}>
-            <Layer type="line" paint={{ "line-color": "#c6c299", "line-width": 2 }} />
+            <Layer id="local" type="line" paint={{ "line-color": "#c6c299", "line-width": 3 }} />
           </Source>
         )}
         {roadData.general && (
           <Source id="general" type="geojson" data={roadData.general as any}>
-            <Layer type="line" paint={{ "line-color": "#d19723", "line-width": 2 }} />
+            <Layer id="general" type="line" paint={{ "line-color": "#d19723", "line-width": 3 }} />
           </Source>
         )}
         {roadData.highway && (
           <Source id="highway" type="geojson" data={roadData.highway as any}>
-            <Layer type="line" paint={{ "line-color": "#0da344", "line-width": 3 }} />
+            <Layer id="highway" type="line" paint={{ "line-color": "#0da344", "line-width": 5 }} />
           </Source>
         )}
         <ScaleControl style={CONTROL_STYLES} />
         <NavigationControl style={CONTROL_STYLES} />
         <FullscreenControl style={CONTROL_STYLES} />
         <GeolocateControl style={CONTROL_STYLES} />
+        {hoverInfo && (
+          <div className="tooltip" style={{ left: hoverInfo.x, top: hoverInfo.y }}>
+            <div>道路種別： {roadTypeCodeToName(hoverInfo.feature.properties.roadTypeCode)}</div>
+            <div>路線名： {hoverInfo.feature.properties.routeName}</div>
+            <div>線名： {hoverInfo.feature.properties.lineName}</div>
+            <div>通称： {hoverInfo.feature.properties.popularName}</div>
+          </div>
+        )}
       </ReactMap>
     </div>
   );
+}
+
+function roadTypeCodeToName(code: string) {
+  switch (code) {
+    case "1":
+      return "高速道路";
+    case "2":
+      return "一般道路";
+    case "3":
+      return "主要地方道";
+    default:
+      return "不明";
+  }
 }

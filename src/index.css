@@ -11,3 +11,17 @@
   width: 100dvw;
   height: 100dvh;
 }
+
+.tooltip {
+  position: absolute;
+  margin: 8px;
+  padding: 4px;
+  border-radius: 4px;
+  background: hsl(0 0% 100% / 0.7);
+  backdrop-filter: blur(4px);
+  color: black;
+  max-width: 300px;
+  font-size: 0.9rem;
+  z-index: 9;
+  pointer-events: none;
+}
