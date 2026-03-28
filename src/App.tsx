@@ -26,7 +26,7 @@ export function App() {
     general: null,
     local: null,
   });
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -50,7 +50,7 @@ export function App() {
         }
       } catch {
         if (isMounted) {
-          setError("データを読み込めませんでした");
+          // setError("データを読み込めませんでした");
           console.error("道路データの取得に失敗しました");
         }
       }
