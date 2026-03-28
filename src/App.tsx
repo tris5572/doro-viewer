@@ -30,16 +30,18 @@ export function App() {
 
   useEffect(() => {
     let isMounted = true;
+    const dataBasePath = `${import.meta.env.BASE_URL}data`;
 
     const loadRoadData = async () => {
       try {
         const [highwayRes, generalRes, localRes] = await Promise.all([
-          fetch("/data/1.json"),
-          fetch("/data/2.json"),
-          fetch("/data/3.json"),
+          fetch(`${dataBasePath}/1.json`),
+          fetch(`${dataBasePath}/2.json`),
+          fetch(`${dataBasePath}/3.json`),
         ]);
 
         if (!highwayRes.ok || !generalRes.ok || !localRes.ok) {
+          console.error(highwayRes, generalRes, localRes);
           throw new Error("道路データの取得に失敗しました");
         }
 
